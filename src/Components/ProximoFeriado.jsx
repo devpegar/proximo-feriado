@@ -46,7 +46,6 @@ function ProximoFeriado() {
 
   useEffect(() => {
     axios(url).then(({ data }) => {
-      console.log(data);
       buscaFeriado(data);
     });
   }, [hoy.year2]);
