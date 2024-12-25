@@ -1,8 +1,8 @@
 {
   "name": "proximo-feriado",
-  "homepage": "https://devpeg.ar/proyectos/proximoferiado",
+  "homepage": "https://dev.bytefix.com.ar/proyectos/proximo-feriado/",
   "private": true,
-  "version": "1.1.1",
+  "version": "1.2.1",
   "type": "module",
   "scripts": {
     "dev": "vite",
