@@ -1,47 +1,17 @@
 import { useState, useEffect } from "react";
 import axios from "axios";
 import { getWeatherHolyDay } from "../services/getWeatherHolyDay";
+import { getProximoFeriado } from "../services/getProximoFeriado";
+import { faltanDias } from "../services/getFaltanDias";
+import { hoy, nombreDia, nombreMes } from "../tools/fechas";
 import Spinner from "./Spinner";
-
-const meses = [
-  "Enero",
-  "Febrero",
-  "Marzo",
-  "Abril",
-  "Mayo",
-  "Junio",
-  "Julio",
-  "Agosto",
-  "Septiembre",
-  "Octubre",
-  "Noviembre",
-  "Diciembre",
-];
-const dias = [
-  "Domingo",
-  "Lunes",
-  "Martes",
-  "Miercoles",
-  "Jueves",
-  "Viernes",
-  "Sabado",
-];
-
-const fechaActual = new Date();
-const hoy = {
-  dia: fechaActual.getDate(),
-  mes: fechaActual.getMonth() + 1,
-  year: fechaActual.getFullYear(),
-  year2: 0,
-};
-const diaDeLaSemana = (dia, mes, year) =>
-  dias[new Date(`${mes}/${dia}/${year}`).getDay()];
 
 const optionsRequest = {};
 
 function ProximoFeriado() {
   const [diaFeriado, setDiaFeriado] = useState("");
   const [mesFeriado, setMesFeriado] = useState("");
+  const [añoFeriado, setAñoFeriado] = useState("");
   const [nombreFeriado, setNombreFeriado] = useState("");
   const [tipoFeriado, setTipoFeriado] = useState("");
   const [cargando, setCargando] = useState(true);
@@ -78,55 +48,27 @@ function ProximoFeriado() {
   }
 
   const url =
-    hoy.year2 === 0
-      ? `https://api.argentinadatos.com/v1/feriados/${hoy.year}`
-      : `https://api.argentinadatos.com/v1/feriados/${hoy.year2}`;
+    hoy.fin === false
+      ? `https://api.argentinadatos.com/v1/feriados/${hoy.año}`
+      : `https://api.argentinadatos.com/v1/feriados/${año2}`;
 
   useEffect(() => {
     axios(url).then(({ data }) => {
-      buscaFeriado(data);
+      // buscaFeriado(data);
+      const [fechaFeriado, fin] = getProximoFeriado(data);
+      const { dia, mes, año, nombre, tipo } = fechaFeriado;
+      setDiaFeriado(dia);
+      setMesFeriado(mes);
+      setAñoFeriado(año);
+      setNombreFeriado(nombre);
+      setTipoFeriado(tipo.replace(/^\w/, (c) => c.toUpperCase()));
+
+      if (fin) {
+        const año2 = hoy.año + 1;
+      }
+      setCargando(false);
     });
-  }, [hoy.year2]);
-
-  const buscaFeriado = (feriados) => {
-    let feriado = feriados.find(
-      (f) => (f.mes === hoy.mes && f.dia > hoy.dia) || f.mes > hoy.mes
-    );
-
-    if (!feriado) {
-      feriado = feriados[0];
-      hoy.year2 = hoy.year + 1;
-    }
-    const { fecha, tipo, nombre } = feriado;
-    setDiaFeriado(fecha.slice(8, 10));
-    setMesFeriado(fecha.slice(5, 7));
-    setNombreFeriado(nombre);
-    setTipoFeriado(tipo.replace(/^\w/, (c) => c.toUpperCase()));
-
-    setCargando(false);
-  };
-  const faltanDias = () => {
-    const fechaInicio = new Date(`${hoy.mes}/${hoy.dia}/${hoy.year}`);
-    if (hoy.year2 !== 0) {
-      const fechaFinal = new Date(`${mesFeriado}/${diaFeriado}/${hoy.year2}`);
-      const tiempo = fechaFinal.getTime() - fechaInicio.getTime();
-      const dias = Math.floor(tiempo / (1000 * 60 * 60 * 24));
-      return dias;
-    } else {
-      const fechaFinal = new Date(`${mesFeriado}/${diaFeriado}/${hoy.year}`);
-      const tiempo = fechaFinal.getTime() - fechaInicio.getTime();
-      const dias = Math.floor(tiempo / (1000 * 60 * 60 * 24));
-      return dias;
-    }
-  };
-
-  const nombreDia = () => {
-    if (hoy.year2 !== 0) {
-      return diaDeLaSemana(diaFeriado, mesFeriado, hoy.year2);
-    } else {
-      return diaDeLaSemana(diaFeriado, mesFeriado, hoy.year);
-    }
-  };
+  }, [hoy.fin]);
 
   return (
     <section className="container laptop:max-w-3xl mx-auto flex justify-center items-center">
@@ -139,7 +81,8 @@ function ProximoFeriado() {
               Próximo feriado
             </h1>
             <h2 className="text-arg-Marron text-xl font-semibold">
-              {nombreDia()}, {diaFeriado} de {meses[parseInt(mesFeriado) - 1]}
+              {nombreDia(diaFeriado, mesFeriado, añoFeriado)}, {diaFeriado} de{" "}
+              {nombreMes(mesFeriado)}
             </h2>
           </div>
           <div className="py-5">
@@ -147,11 +90,15 @@ function ProximoFeriado() {
               {nombreFeriado}
             </h2>
             <h3 className="text-arg-Marron text-4xl font-semibold text-center py-5 mt-5">
-              {faltanDias() !== 1 ? "Faltan " : "Falta "}
+              {faltanDias(diaFeriado, mesFeriado, añoFeriado) !== 1
+                ? "Faltan "
+                : "Falta "}
               <span className="text-arg-Amarillo bg-arg-Marron py-2 px-6 rounded-full text-5xl font-bold drop-shadow-lg">
-                {faltanDias()}
+                {faltanDias(diaFeriado, mesFeriado, añoFeriado)}
               </span>{" "}
-              {faltanDias() !== 1 ? "dias" : "día"}
+              {faltanDias(diaFeriado, mesFeriado, añoFeriado) !== 1
+                ? "días"
+                : "día"}
             </h3>
           </div>
           <div>
