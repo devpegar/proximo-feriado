@@ -50,12 +50,12 @@ function ProximoFeriado() {
   const url =
     hoy.fin === false
       ? `https://api.argentinadatos.com/v1/feriados/${hoy.año}`
-      : `https://api.argentinadatos.com/v1/feriados/${año2}`;
+      : `https://api.argentinadatos.com/v1/feriados/${hoy.año + 1}`;
 
   useEffect(() => {
     axios(url).then(({ data }) => {
       // buscaFeriado(data);
-      const [fechaFeriado, fin] = getProximoFeriado(data);
+      const [fechaFeriado] = getProximoFeriado(data);
       const { dia, mes, año, nombre, tipo } = fechaFeriado;
       setDiaFeriado(dia);
       setMesFeriado(mes);
@@ -63,9 +63,9 @@ function ProximoFeriado() {
       setNombreFeriado(nombre);
       setTipoFeriado(tipo.replace(/^\w/, (c) => c.toUpperCase()));
 
-      if (fin) {
-        const año2 = hoy.año + 1;
-      }
+      // if (fin) {
+      //   const año2 = hoy.año + 1;
+      // }
       setCargando(false);
     });
   }, [hoy.fin]);

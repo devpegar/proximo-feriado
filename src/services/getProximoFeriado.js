@@ -12,6 +12,7 @@ export const getProximoFeriado = (feriados) => {
 
   if (!fechaFeriado) {
     fechaFeriado = newFeriados[0];
+
     hoy.fin = true;
   }
   return [fechaFeriado, hoy.fin];
